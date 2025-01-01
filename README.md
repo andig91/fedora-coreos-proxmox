@@ -31,18 +31,21 @@ This is a fork from https://git.geco-it.net/GECO-IT-PUBLIC/fedora-coreos-proxmox
 4.  Modify `template_deploy.conf` to custom your VM parameter as below:
 
     ```
+    # Only create a machine without template, the TEMPLATE_NAME will be the hostname, without modifications
+    SKIP_TEMPLATE="true"
+
     # template vm vars
-    TEMPLATE_NAME="TMPLT-fcos" # Template VM name append with <flactar_version> in Proxmox GUI
+    TEMPLATE_NAME="podman-fcos" # Template VM name append with <flactar_version> in Proxmox GUI
     TEMPLATE_RECREATE="false" # Fore recreate template ?
     # Note: If you want only update hook script and Template_Ignition file, you can keep it as false, these files are always overwritten
-    TEMPLATE_VMID="900" # VMID of Template VM
+    TEMPLATE_VMID="341" # VMID of Template VM
     TEMPLATE_VMSTORAGE="local-lvm" # Target storage for template VM
     SNIPPET_STORAGE="local" # Target storage for snippets files
     VMDISK_OPTIONS=",discard=on"
 
-    TEMPLATE_MEMORY="4096" # Amount of RAM for the template VM in MB
+    TEMPLATE_MEMORY="3072" # Amount of RAM for the template VM in MB
     TEMPLATE_CPU_TYPE="host" # Emulated CPU type
-    TEMPLATE_CPU_CORE="4" # The number of cores for template VM
+    TEMPLATE_CPU_CORE="2" # The number of cores for template VM
     # 0-False, 1-True
     TEMPLATE_AUTOSTART="1" # Whether the VM will be automatic restart after crash
     TEMPLATE_ONBOOT="0" # Whether the VM will be started during system bootup.
@@ -51,8 +54,10 @@ This is a fork from https://git.geco-it.net/GECO-IT-PUBLIC/fedora-coreos-proxmox
     TEMPLATE_IGNITION="fcos-base-tmplt.yaml"
 
     # fcos image version
-    STREAMS=stable # The stream you decide to use
-    VERSION=36.20220618.3.1 # You need to bump it to the latest version manually
+    # The script vmsetup.sh set to "stable" if not set here. Alternatives: "testing" and "next"
+    #STREAMS=stable # The stream you decide to use
+    # The script vmsetup.sh get the latest version of your stream. Only set, if you want another version set it here
+    #VERSION=41.20241122.3.0 # You need to bump it to latest version manually
     PLATEFORM=qemu
     BASEURL=https://builds.coreos.fedoraproject.org
     ```
