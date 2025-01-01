@@ -9,7 +9,7 @@
           
           OUT=/run/motd.d/22_geco.motd
           
-          echo -e "\nWelcome this server\n" > ${OUT}
+          echo -e "\nWelcome this FCOS server\n" > ${OUT}
           eval "$(grep -E "^(NAME=|VARIANT=)" /etc/os-release)" && echo -e "\e[33mOperating System:\e[0m ${NAME} ${VARIANT}" >> ${OUT}
           eval "$(grep ^OSTREE_VERSION /etc/os-release)" && echo -e "\e[33mVersion:\e[0m ${OSTREE_VERSION}" >> ${OUT}
           echo -e "\e[33mKernel:\e[0m $(uname -r)" >> ${OUT}
@@ -263,7 +263,7 @@
       contents:
         inline: |
 
-          Welcome this server
+          Welcome this FCOS server
           
 
 # kernel config

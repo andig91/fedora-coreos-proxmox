@@ -19,7 +19,31 @@ else
         source ${CONFIG_FILE}
 fi
 
-TEMPLATE_NAME_FULL="${TEMPLATE_NAME}-${VERSION}"
+if [ -z $STREAMS ]; then
+        STREAMS=stable
+fi
+
+if [ -z $VERSION ]; then
+        #Get lastest version if not set in conf-file
+        if [[ ${STREAMS} == "stable" ]]; then
+                VERSION=$(wget -qO - https://builds.coreos.fedoraproject.org/streams/stable.json | jq -r '.architectures.x86_64.artifacts.qemu.release')
+        elif [[ ${STREAMS} == "next" ]]; then
+                VERSION=$(wget -qO - https://builds.coreos.fedoraproject.org/release-notes/next.json | jq -r '.releases | keys[-1]')
+        elif [[ ${STREAMS} == "testing" ]]; then
+                VERSION=$(wget -qO - https://builds.coreos.fedoraproject.org/release-notes/testing.json | jq -r '.releases | keys[-1]')
+        fi
+        # Get the complete link
+        #curl https://builds.coreos.fedoraproject.org/streams/stable.json | grep "qemu.x86_64" | grep "location" | cut -d "\"" -f 4
+fi
+
+echo "Stream: $STREAMS Version: $VERSION selected"
+
+if [[ ${SKIP_TEMPLATE} == "true" ]];then
+        TEMPLATE_NAME_FULL="${TEMPLATE_NAME}"
+else
+        TEMPLATE_NAME_FULL="${TEMPLATE_NAME}-${VERSION}"
+fi
+
 
 if [[ -f ${TEMPLATE_NAME_FULL}.id ]] && [[ ${TEMPLATE_RECREATE} != true ]];then
         echo "${TEMPLATE_NAME_FULL} exists. Recreating not asked."
@@ -138,10 +162,13 @@ if [[ ${TEMPLATE_CREATE} == "true" ]];then
         # set hook-script
         qm set ${TEMPLATE_VMID} -hookscript ${SNIPPET_STORAGE}:snippets/hook-fcos.sh
 
-
-        # convert vm template
-        echo -n "Convert VM ${TEMPLATE_VMID} in proxmox vm template... "
-        qm template ${TEMPLATE_VMID} &> /dev/null || true
+        if [[ ${SKIP_TEMPLATE} != "true" ]];then
+                # convert vm template
+                echo -n "Convert VM ${TEMPLATE_VMID} in proxmox vm template... "
+                qm template ${TEMPLATE_VMID} &> /dev/null || true
+        else
+                echo "Converting to template not activated"
+        fi
         echo "[done]"
 fi
 echo
