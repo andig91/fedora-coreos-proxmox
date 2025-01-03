@@ -45,22 +45,22 @@ else
 fi
 
 
-if [[ -f ${TEMPLATE_NAME_FULL}.id ]] && [[ ${TEMPLATE_RECREATE} != true ]];then
+if [[ -f ${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id ]] && [[ ${TEMPLATE_RECREATE} != true ]];then
         echo "${TEMPLATE_NAME_FULL} exists. Recreating not asked."
         sleep 2
-        TEMPLATE_VMID=$(cat ./${TEMPLATE_NAME_FULL}.id)
+        TEMPLATE_VMID=$(cat ./${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id)
         TEMPLATE_CREATE="false"
-elif [[ ! -f ${TEMPLATE_NAME_FULL}.id ]];then
-        echo "${TEMPLATE_VMID}" > ${TEMPLATE_NAME_FULL}.id
+elif [[ ! -f ${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id ]];then
+        echo "${TEMPLATE_VMID}" > ${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id
         TEMPLATE_CREATE="true"
-elif [[ -f ${TEMPLATE_NAME_FULL}.id ]] && [[ ${TEMPLATE_RECREATE} == true ]];then
+elif [[ -f ${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id ]] && [[ ${TEMPLATE_RECREATE} == true ]];then
         echo "${TEMPLATE_NAME_FULL} exists. Recreating asked !!"
-        TEMPLATE_VMID=$(cat ./${TEMPLATE_NAME_FULL}.id)
+        TEMPLATE_VMID=$(cat ./${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id)
         qm destroy ${TEMPLATE_VMID} --purge
-        rm ./${TEMPLATE_NAME_FULL}.id
+        rm ./${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id
         sleep 3
-        TEMPLATE_VMID=$(pvesh get /cluster/nextid)
-        echo "${TEMPLATE_VMID}" > ${TEMPLATE_NAME_FULL}.id
+        #TEMPLATE_VMID=$(pvesh get /cluster/nextid)
+        echo "${TEMPLATE_VMID}" > ${TEMPLATE_VMID}-${TEMPLATE_NAME_FULL}.id
         TEMPLATE_CREATE="true"
 else
 #write Template VM_ID in a file.
@@ -169,6 +169,17 @@ if [[ ${TEMPLATE_CREATE} == "true" ]];then
         else
                 echo "Converting to template not activated"
         fi
+
+        if [ $CIUSERNAME ]; then
+                echo "Setting Cloud-Init Username"
+                qm set ${TEMPLATE_VMID} --ciuser $CIUSERNAME
+        fi
+
+        if [ $CISSHKEY ]; then
+                echo "Setting Cloud-Init SSH-Key(s)"
+                qm set ${TEMPLATE_VMID} --sshkey $CISSHKEY
+        fi
+
         echo "[done]"
 fi
 echo

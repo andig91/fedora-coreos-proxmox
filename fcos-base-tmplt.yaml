@@ -18,7 +18,7 @@
           echo -e "\e[33mRAM:\e[0m $(free | grep Mem | awk '{print $2}' | xargs -i expr {} / 1000 / 1000 | xargs -i printf '%.0fG\n' {})" >> ${OUT}
           i=0; for disk in $(ls /dev/sd[a-z] /dev/vd[a-z] 2>/dev/null); do
                 lsblk > /dev/null 2>&1 || break
-                echo -e "\e[33mHDD${i} ($(basename ${disk})):\e[0m$(lsblk -n --nodeps ${disk} -o size)" >> ${OUT}
+                echo -e "\e[33mHDD${i} ($(basename ${disk})):\e[0m$(lsblk -n --nodeps ${disk} -o size) ($(df -h | grep '/sysroot' | awk '{print $5 " of " $2}'))" >> ${OUT}
                 i=$((i+1))
           done
           echo -e "\n\e[33mHostname:\e[0m "$(hostname -f) >> ${OUT}  
@@ -157,7 +157,7 @@
             [[ "x${NEWUSERNAME}" == "x" ]] && NEWUSERNAME="admin" # NEWUSERNAME="core" use "admin" on geco-template
             getent passwd ${NEWUSERNAME} &> /dev/null || {
               echo -n "[INFO]: Cloudinit: add sytem user: ${NEWUSERNAME}... "
-              useradd --comment "Geco-iT CoreOS Administrator" --create-home \
+              useradd --comment "CoreOS Administrator" --create-home \
                       --groups adm,wheel,sudo,systemd-journal,docker ${NEWUSERNAME} &> /dev/null || { echo "[failed]"; exit 1; }
               echo "[done]"
             }
@@ -275,6 +275,11 @@
           # to hide audit messages from the interactive console
           kernel.printk=4
 
+  links:
+    - path: /etc/localtime
+      target: /usr/share/zoneinfo/Europe/Vienna
+      overwrite: true
+
 
 # geco-motd.service
 systemd:
@@ -294,6 +299,32 @@ systemd:
 
         [Install]
         WantedBy=multi-user.target
+
+    - name: geco-motd-refresh.service
+#      enabled: true
+      contents: |                                                                                   
+        [Unit]
+        Description=Geco-iT Hourly MOTD Update
+        After=network-online.target
+
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/local/bin/geco-motd
+
+    - name: geco-motd-refresh.timer
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Run Geco-iT Hourly MOTD Update Every Hour
+
+        [Timer]
+        OnCalendar=hourly
+        #OnCalendar=*-*-* *:*:00
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
+
 
 # geco-cloudinit: apply cloudinit settings on boot
     - name: geco-cloudinit.service
@@ -346,3 +377,4 @@ systemd:
             [Service]
             ExecStart=
             ExecStart=/sbin/fstrim -av
+
