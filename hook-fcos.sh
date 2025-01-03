@@ -156,6 +156,7 @@ then
 				${COREOS_FILES_PATH}/${vmid}.yaml 2> /dev/null
 	[[ $? -eq 0 ]] || {
 		echo "[failed]"
+		echo "For debugging, execute: \"/usr/local/bin/fcos-ct --pretty --strict --output ${COREOS_FILES_PATH}/${vmid}.ign ${COREOS_FILES_PATH}/${vmid}.yaml\""
 		exit 1
 	}
 	echo "[done]"

@@ -275,6 +275,15 @@
           # to hide audit messages from the interactive console
           kernel.printk=4
 
+    - path: /etc/ssh/sshd_config.d/00-permitroot.conf
+      mode: 0600
+      contents:
+        inline: |
+          PermitRootLogin no
+          LoginGraceTime 1m
+          StrictModes yes
+          PermitEmptyPasswords no
+
   links:
     - path: /etc/localtime
       target: /usr/share/zoneinfo/Europe/Vienna
