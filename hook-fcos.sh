@@ -15,15 +15,18 @@ YQ="/usr/local/bin/yq read --exitStatus --printMode v --stripComments --"
 #
 setup_fcoreosct()
 {
-        local CT_VER=0.7.0
+        #local CT_VER=0.7.0
+		local CT_VER=0.23.0
         local ARCH=x86_64
         local OS=unknown-linux-gnu # Linux
-        local DOWNLOAD_URL=https://github.com/coreos/fcct/releases/download
- 
+        #local DOWNLOAD_URL=https://github.com/coreos/fcct/releases/download
+		local DOWNLOAD_URL=https://github.com/coreos/butane/releases/download/v${CT_VER}/butane-${ARCH}-${OS}
+
         [[ -x /usr/local/bin/fcos-ct ]]&& [[ "x$(/usr/local/bin/fcos-ct --version | awk '{print $NF}')" == "x${CT_VER}" ]]&& return 0
         echo "Setup Fedora CoreOS config transpiler..."
         rm -f /usr/local/bin/fcos-ct
-        wget --quiet --show-progress ${DOWNLOAD_URL}/v${CT_VER}/fcct-${ARCH}-${OS} -O /usr/local/bin/fcos-ct
+        #wget --quiet --show-progress ${DOWNLOAD_URL}/v${CT_VER}/fcct-${ARCH}-${OS} -O /usr/local/bin/fcos-ct
+		wget --quiet --show-progress ${DOWNLOAD_URL} -O /usr/local/bin/fcos-ct
         chmod 755 /usr/local/bin/fcos-ct
 }
 setup_fcoreosct
@@ -31,6 +34,8 @@ setup_fcoreosct
 setup_yq()
 {
         local VER=3.4.1
+		# No Upgrade!! YQ Version 4 new syntax, many changes needed: https://github.com/mikefarah/yq/releases/tag/4.0.0-alpha1
+        #local VER=v4.44.6
 
         [[ -x /usr/bin/wget ]]&& download_command="wget --quiet --show-progress --output-document"  || download_command="curl --location --output"
         [[ -x /usr/local/bin/yq ]]&& [[ "x$(/usr/local/bin/yq --version | awk '{print $NF}')" == "x${VER}" ]]&& return 0
